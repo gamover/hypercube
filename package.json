@@ -1,11 +1,11 @@
 {
-  "name": "hypercube",
+  "name": "gamover.hypercube",
   "version": "1.0.0",
   "description": "Components via mithril",
   "main": "index.coffee",
   "repository": {
     "type": "git",
-    "url": "git@github.com:gamover/hypercube.git"
+    "url": "git@github.com:gamover/hypercube.git#master"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -13,6 +13,6 @@
   "dependencies": {
     "mithril": "^0.2.5"
   },
-  "author": "G@mOBEP",
+  "author": "G@mOBEP <rusmiran@gmail.com>",
   "license": "ISC"
 }
