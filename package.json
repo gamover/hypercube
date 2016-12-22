@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "Components via mithril",
   "main": "index.coffee",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:gamover/hypercube.git"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
