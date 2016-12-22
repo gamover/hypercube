@@ -1,0 +1,14 @@
+{
+  "name": "hypercube",
+  "version": "1.0.0",
+  "description": "Components via mithril",
+  "main": "index.coffee",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "mithril": "^0.2.5"
+  },
+  "author": "G@mOBEP",
+  "license": "ISC"
+}
