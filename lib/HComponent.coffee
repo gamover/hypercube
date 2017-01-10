@@ -6,19 +6,54 @@ class HComponent
   Tracker = null
 
   constructor: (args = {})->
-    @_view = args.view ? null
+    @_model = null
+    @_view = null
+    @_controller = null
+
+    @setModel args.model
+    @setView args.view
+    @setController args.controller
+
+  getInstance: (args = {})->
+    new HComponent args
+
+  setModel: (model)->
+    @_model = model
+    @
+
+  getModel: ->
+    @_model
 
   setView: (view)->
+    throw new Error 'The view must be a function' if view? and typeof view isnt 'function'
     @_view = view
     @
 
+  getView: (fn = false, bind = false)->
+    return unless @_view?
+
+    if fn
+      return @_view.bind @, $m, @_model, @_controller if bind
+      return @_view
+
+    @_view.call @, $m, @_model, @_controller
+
+  setController: (controller)->
+    @_controller = controller
+    @
+
+  getController: ->
+    @_controller
+
   render: (viewport, forceRecreation)->
     return unless @_view?
-    return $m.render viewport, @render(), forceRecreation if viewport?
-    $m view: @_view.bind @, $m
+    return $m.render viewport, view: @_view.bind(@, $m, @_model, @_controller), forceRecreation if viewport?
+    @getView()
 
   mount: (viewport)->
-    $m.mount viewport, @render()
+    return unless @_view?
+    return $m.mount viewport, view: @_view.bind @, $m, @_model, @_controller if viewport?
+    @getView()
 
   watch: (param)->
     return param if typeof param isnt 'function'
@@ -33,6 +68,10 @@ class HComponent
 
   @setTracker: (tracker)->
     Tracker = tracker
+    HComponent
+
+  @getTracker: ->
+    Tracker
 
 # ----------------------------------------------------------------------------------------------------------------------
 

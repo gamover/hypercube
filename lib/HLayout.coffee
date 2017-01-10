@@ -4,7 +4,7 @@ HComponent = require './HComponent.coffee'
 
 class HLayout extends HComponent
   constructor: (args = {})->
-    super
+    super args
 
     @_content = default: []
 
