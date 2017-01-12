@@ -6,16 +6,22 @@ class HComponent
   Tracker = null
 
   constructor: (args = {})->
+    @_loaded = false
+    @_computations = []
+
     @_model = null
     @_view = null
     @_controller = null
 
-    @setModel args.model
-    @setView args.view
-    @setController args.controller
+    @init args
 
   getInstance: (args = {})->
     new HComponent args
+
+  init: (args = {})->
+    @setModel args.model
+    @setView args.view
+    @setController args.controller
 
   setModel: (model)->
     @_model = model
@@ -33,12 +39,23 @@ class HComponent
     return unless @_view?
 
     if fn
-      return @_view.bind @, $m, @_model, @_controller if bind
+      return @_view.bind @, $m if bind
       return @_view
 
-    @_view.call @, $m, @_model, @_controller
+    @_view.call @, $m, @_controller
 
-  setController: (controller)->
+  setController: (controller = {})->
+    $this = @
+    controller.onload = do (onload = controller.onload)-> ->
+      onload?.call controller
+      $this._loaded = true
+    controller.onunload = do (onunload = controller.onunload)-> ->
+      computations = $this._computations
+      $this._computations = []
+      computations.forEach (c)-> c.stop()
+      onunload?.call controller
+      $this._loaded = false
+
     @_controller = controller
     @
 
@@ -46,24 +63,55 @@ class HComponent
     @_controller
 
   render: (viewport, forceRecreation)->
+    $this = @
+
     return unless @_view?
-    return $m.render viewport, view: @_view.bind(@, $m, @_model, @_controller), forceRecreation if viewport?
-    @getView()
+
+    view = @getView true, true
+
+    controller = $this.getController()
+    if controller?
+      controller.onunload?() if @_loaded
+      controller.onload?()
+
+    component = $m.component
+      view: view
+      controller: -> controller
+
+    return $m.render viewport, component, forceRecreation if viewport?
+
+    component
 
   mount: (viewport)->
+    $this = @
+
     return unless @_view?
-    return $m.mount viewport, view: @_view.bind @, $m, @_model, @_controller if viewport?
-    @getView()
+
+    view = @getView true, true
+
+    controller = $this.getController()
+    if controller?
+      controller.onunload?() if @_loaded
+      controller.onload?()
+
+    component = $m.component
+      view: view
+      controller: -> controller
+
+    return $m.mount viewport, component if viewport?
+
+    component
 
   watch: (param)->
     return param if typeof param isnt 'function'
-    return param() unless Tracker?
+    return param() if typeof Tracker?.autorun isnt 'function'
 
-    Tracker.autorun (c)->
+    @_computations.push Tracker.autorun (c)->
       param()
       unless c.firstRun
         c.stop()
         Tracker.nonreactive -> $m.redraw()
+
     param()
 
   @setTracker: (tracker)->
