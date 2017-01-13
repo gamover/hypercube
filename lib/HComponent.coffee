@@ -13,6 +13,8 @@ class HComponent
     @_view = null
     @_controller = null
 
+    @watch = @_watch.bind @
+
     @init args
 
   getInstance: (args = {})->
@@ -102,7 +104,7 @@ class HComponent
 
     component
 
-  watch: (param)->
+  _watch: (param)->
     return param if typeof param isnt 'function'
     return param() if typeof Tracker?.autorun isnt 'function'
 
