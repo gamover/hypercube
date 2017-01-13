@@ -108,9 +108,7 @@ class HComponent
 
     @_computations.push Tracker.autorun (c)->
       param()
-      unless c.firstRun
-#        c.stop()
-        Tracker.nonreactive -> $m.redraw()
+      Tracker.nonreactive(-> $m.redraw()) unless c.firstRun
 
     param()
 

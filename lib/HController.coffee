@@ -23,18 +23,16 @@ class HController
     @_computations.push Tracker.autorun.apply Tracker, arguments
 
   watch: (fn)->
-    return fn if typeof fn isnt 'function'
+    return if typeof fn isnt 'function'
 
     Tracker = HComponent.getTracker()
-    return fn() if typeof Tracker?.autorun isnt 'function'
+    return if typeof Tracker?.autorun isnt 'function'
 
-    @_computations.push Tracker.autorun (c)->
+    @_computations.push computation = Tracker.autorun (c)->
       fn()
-      unless c.firstRun
-#        c.stop()
-        Tracker.nonreactive -> $m.redraw()
+      Tracker.nonreactive(-> $m.redraw()) unless c.firstRun
 
-    fn()
+    computation
 
 # ----------------------------------------------------------------------------------------------------------------------
 
