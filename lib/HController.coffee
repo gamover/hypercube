@@ -20,6 +20,20 @@ class HController
     throw new Error 'Tracker not found' if typeof Tracker?.autorun isnt 'function'
     @_computations.push Tracker.autorun.apply Tracker, arguments
 
+  watch: (fn)->
+    return fn if typeof fn isnt 'function'
+
+    Tracker = HComponent.getTracker()
+    return fn() if typeof Tracker?.autorun isnt 'function'
+
+    @_computations.push Tracker.autorun (c)->
+      fn()
+      unless c.firstRun
+#        c.stop()
+        Tracker.nonreactive -> $m.redraw()
+
+    fn()
+
 # ----------------------------------------------------------------------------------------------------------------------
 
 module.exports = HController

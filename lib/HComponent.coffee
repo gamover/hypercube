@@ -13,8 +13,6 @@ class HComponent
     @_view = null
     @_controller = null
 
-    @watch = @_watch.bind @
-
     @init args
 
   getInstance: (args = {})->
@@ -104,14 +102,14 @@ class HComponent
 
     component
 
-  _watch: (param)->
+  watch: (param)->
     return param if typeof param isnt 'function'
     return param() if typeof Tracker?.autorun isnt 'function'
 
     @_computations.push Tracker.autorun (c)->
       param()
       unless c.firstRun
-        c.stop()
+#        c.stop()
         Tracker.nonreactive -> $m.redraw()
 
     param()
