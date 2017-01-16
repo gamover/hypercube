@@ -17,16 +17,19 @@ class HController
   getInstance: (args = {})->
     new HController args
 
-  autorun: ->
+  autorun: (fn)->
     Tracker = HComponent.getTracker()
-    throw new Error 'Tracker not found' if typeof Tracker?.autorun isnt 'function'
-    @_computations.push Tracker.autorun.apply Tracker, arguments
+    throw new Error 'Tracker is not defined' if typeof Tracker?.autorun isnt 'function'
+
+    @_computations.push computation = Tracker.autorun fn
+
+    computation
 
   watch: (fn)->
-    return if typeof fn isnt 'function'
+    throw new Error 'Computation must be a function' if typeof fn isnt 'function'
 
     Tracker = HComponent.getTracker()
-    return if typeof Tracker?.autorun isnt 'function'
+    throw new Error 'Tracker is not defined' if typeof Tracker?.autorun isnt 'function'
 
     @_computations.push computation = Tracker.autorun (c)->
       fn()
