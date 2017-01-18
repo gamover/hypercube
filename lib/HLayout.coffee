@@ -15,7 +15,7 @@ class HLayout extends HComponent
 
   getContent: (placeName = 'default')->
     (@_content[placeName] ? []).map (item)->
-      return item.render() if item instanceof HComponent
+      return item.embed() if item instanceof HComponent
       item
 
 # ----------------------------------------------------------------------------------------------------------------------

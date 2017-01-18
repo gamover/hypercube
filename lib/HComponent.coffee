@@ -2,26 +2,105 @@ $m = require 'mithril'
 
 # ----------------------------------------------------------------------------------------------------------------------
 
+Tracker = null
+
+# ----------------------------------------------------------------------------------------------------------------------
+
 class HComponent
-  Tracker = null
-
   constructor: (args = {})->
-    @_loaded = false
-    @_computations = []
-
     @_model = null
     @_view = null
     @_controller = null
+    @_component = null
 
     @init args
-
-  getInstance: (args = {})->
-    new HComponent args
 
   init: (args = {})->
     @setModel args.model
     @setView args.view
     @setController args.controller
+
+  _buildControllerClass: (Controller)->
+    component = @
+
+    computations = []
+    intervalIds = []
+    timeoutIds = []
+
+    stopAllComputations = ->
+      comps = computations
+      computations = []
+      computation.stop() for computation in comps
+
+    clearAllIntervals = ->
+      iids = intervalIds
+      intervalIds = []
+      clearInterval iid for iid in iids
+
+    clearAllTimeouts = ->
+      tids = timeoutIds
+      timeoutIds = []
+      clearTimeout tid for tid in tids
+
+    stopAll = ->
+      stopAllComputations()
+      clearAllIntervals()
+      clearAllTimeouts()
+
+    class HController extends Controller
+      constructor: ->
+        stopAll()
+        super
+
+      onunload: ->
+        stopAll()
+        super if Controller::onunload?
+
+      autorun: (fn)->
+        Tracker = HComponent.getTracker()
+        throw new Error 'Tracker is not defined' if typeof Tracker?.autorun isnt 'function'
+
+        computations.push computation = Tracker.autorun fn
+
+        computation
+
+      watch: (fn)->
+        Tracker = HComponent.getTracker()
+        throw new Error 'Tracker is not defined' if typeof Tracker?.autorun isnt 'function'
+
+        computations.push computation = Tracker.autorun (c)->
+          fn()
+          Tracker.nonreactive(-> $m.redraw()) unless c.firstRun
+
+        computation
+
+      setInterval: (fn, timeout)->
+        intervalIds.push iid = setInterval fn, timeout
+        iid
+
+      setTimeout: (fn, timeout)->
+        timeoutIds.push tid = setTimeout fn, timeout
+        tid
+
+      getComponent: ->
+        component
+
+      getModel: ->
+        component.getModel()
+
+  _buildMithrilComponent: ->
+    return @_component if @_component
+
+    args = Array.prototype.slice.call arguments
+
+    view = @getView true
+    controller = do ($this = @, Controller = @getController())->
+      return unless Controller?
+      -> new (Function.prototype.bind.apply Controller, [null].concat args)
+
+    @_component = $m.component
+      view: view
+      controller: controller
 
   setModel: (model)->
     @_model = model
@@ -31,86 +110,31 @@ class HComponent
     @_model
 
   setView: (view)->
-    throw new Error 'The view must be a function' if view? and typeof view isnt 'function'
     @_view = view
     @
 
-  getView: (fn = false, bind = false)->
+  getView: (bind = false)->
     return unless @_view?
+    return @_view.bind @, $m if bind
+    @_view
 
-    if fn
-      return @_view.bind @, $m if bind
-      return @_view
-
-    @_view.call @, $m, @_controller
-
-  setController: (controller = {})->
-    $this = @
-    controller.onload = do (onload = controller.onload)-> ->
-      onload?.call controller
-      $this._loaded = true
-    controller.onunload = do (onunload = controller.onunload)-> ->
-      computations = $this._computations
-      $this._computations = []
-      computations.forEach (c)-> c.stop()
-      onunload?.call controller
-      $this._loaded = false
-
-    @_controller = controller
+  setController: (Controller)->
+    @_controller = if Controller then @_buildControllerClass Controller else null
     @
 
   getController: ->
     @_controller
 
-  render: (viewport, forceRecreation)->
-    $this = @
-
-    return unless @_view?
-
-    view = @getView true, true
-
-    controller = $this.getController()
-    if controller?
-      controller.onunload?() if @_loaded
-      controller.onload?()
-
-    component = $m.component
-      view: view
-      controller: -> controller
-
-    return $m.render viewport, component, forceRecreation if viewport?
-
-    component
-
   mount: (viewport)->
-    $this = @
+    component = @_buildMithrilComponent.apply @, Array.prototype.slice.call arguments, 1
+    $m.mount viewport, component if viewport?
 
-    return unless @_view?
+  render: (viewport, forceRecreation)->
+    component = @_buildMithrilComponent.apply @, Array.prototype.slice.call arguments, 2
+    $m.render viewport, component, forceRecreation if viewport?
 
-    view = @getView true, true
-
-    controller = $this.getController()
-    if controller?
-      controller.onunload?() if @_loaded
-      controller.onload?()
-
-    component = $m.component
-      view: view
-      controller: -> controller
-
-    return $m.mount viewport, component if viewport?
-
-    component
-
-  watch: (param)->
-    return param if typeof param isnt 'function'
-    return param() if typeof Tracker?.autorun isnt 'function'
-
-    @_computations.push Tracker.autorun (c)->
-      param()
-      Tracker.nonreactive(-> $m.redraw()) unless c.firstRun
-
-    param()
+  embed: ->
+    @_buildMithrilComponent.apply @, arguments
 
   @setTracker: (tracker)->
     Tracker = tracker
