@@ -13,7 +13,7 @@ export class HComponent {
 
     this.setModel(args.model);
     this.setView(args.view);
-    this.setController(args.controller)
+    this.setController(args.controller);
   }
 
   _buildControllerClass(Controller) {
@@ -98,12 +98,17 @@ export class HComponent {
     let Controller = this.getController();
 
     return this._component = {
-      view: this.getView(true),
+      view: ()=> this.getView(true)(),
       controller: Controller ? (()=> new (Function.prototype.bind.apply(Controller, [null].concat(args)))) : null
     }
   }
 
-  setModel(model = null) {
+  getMithril() {
+    return $m;
+  }
+
+  setModel(model) {
+    if (model === undefined) return this;
     this._model = model;
     return this;
   }
@@ -112,17 +117,19 @@ export class HComponent {
     return this._model;
   }
 
-  setView(view = null) {
+  setView(view) {
+    if (view === undefined) return this;
     this._view = view;
     return this;
   }
 
   getView(bind) {
-    if (this._view && bind) return this._view.bind(this, $m);
+    if (this._view && bind) return this._view.bind(this, $m, this, this._controller, this._model);
     return this._view;
   }
 
   setController(Controller = null) {
+    if (Controller === undefined) return this;
     this._controller = Controller ? this._buildControllerClass(Controller) : null;
     return this;
   }
