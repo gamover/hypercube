@@ -13,7 +13,7 @@ export class HComponent {
 
     this.setModel(args.model);
     this.setView(args.view);
-    this.setController(args.controller);
+    this.buildController(args.controller);
   }
 
   _buildControllerClass(Controller) {
@@ -92,14 +92,15 @@ export class HComponent {
     }
   }
 
-  _buildMithrilComponent(...args) {
+  _getMithrilComponent() {
     if (this._component) return this._component;
 
-    let Controller = this.getController();
+    let view = this.getView();
+    let controller = this.getController();
 
     return this._component = {
-      view: ()=> this.getView(true)(),
-      controller: Controller ? (()=> new (Function.prototype.bind.apply(Controller, [null].concat(args)))) : null
+      view: view,
+      controller: controller ? ()=> controller : null
     }
   }
 
@@ -119,18 +120,17 @@ export class HComponent {
 
   setView(view) {
     if (view === undefined) return this;
-    this._view = view;
+    this._view = ()=> view.call(this, this.getMithril(), this, this.getController(), this.getModel());
     return this;
   }
 
-  getView(bind) {
-    if (this._view && bind) return this._view.bind(this, $m, this, this._controller, this._model);
+  getView() {
     return this._view;
   }
 
-  setController(Controller = null) {
+  buildController(Controller, ...args) {
     if (Controller === undefined) return this;
-    this._controller = Controller ? this._buildControllerClass(Controller) : null;
+    this._controller = Controller ? new (this._buildControllerClass(Controller))(...args) : null;
     return this;
   }
 
@@ -139,16 +139,16 @@ export class HComponent {
   }
 
   mount(viewport, ...args) {
-    let component = this._buildMithrilComponent(...args);
+    let component = this._getMithrilComponent(...args);
     return $m.mount(viewport, component);
   }
 
   render(viewport, forceRecreation, ...args) {
-    let component = this._buildMithrilComponent(...args);
+    let component = this._getMithrilComponent(...args);
     return $m.render(viewport, component, forceRecreation);
   }
 
   embed() {
-    return this._buildMithrilComponent(...arguments);
+    return this._getMithrilComponent(...arguments);
   }
 }
