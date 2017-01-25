@@ -13,12 +13,9 @@ class HComponent
     @_controller = null
     @_component = null
 
-    @init args
-
-  init: (args = {})->
     @setModel args.model
     @setView args.view
-    @setController args.controller
+    @buildController args.controller
 
   _buildControllerClass: (Controller)->
     component = @
@@ -28,19 +25,16 @@ class HComponent
     timeoutIds = []
 
     stopAllComputations = ->
-      comps = computations
+      computation.stop() for computation in computations
       computations = []
-      computation.stop() for computation in comps
 
     clearAllIntervals = ->
-      iids = intervalIds
+      clearInterval iid for iid in intervalIds
       intervalIds = []
-      clearInterval iid for iid in iids
 
     clearAllTimeouts = ->
-      tids = timeoutIds
+      clearTimeout tid for tid in timeoutIds
       timeoutIds = []
-      clearTimeout tid for tid in tids
 
     stopAll = ->
       stopAllComputations()
@@ -118,8 +112,9 @@ class HComponent
     return @_view.bind @, $m if bind
     @_view
 
-  setController: (Controller)->
-    @_controller = if Controller then @_buildControllerClass Controller else null
+  buildController: (Controller, args...)->
+    return @ unless Controller?
+    @_controller = if Controller then new (@_buildControllerClass Controller)(args...) else null
     @
 
   getController: ->

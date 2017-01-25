@@ -47,9 +47,13 @@ export class HComponent {
         super(...arguments);
       }
 
+      oninit() {
+        if (typeof super.oninit === 'function') return super.oninit(...arguments);
+      }
+
       onunload() {
         stopAll();
-        if (super.onunload) return super.onunload(...arguments);
+        if (typeof super.onunload === 'function') return super.onunload(...arguments);
       }
 
       autorun(fn) {
@@ -100,7 +104,10 @@ export class HComponent {
 
     return this._component = {
       view: view,
-      controller: controller ? ()=> controller : null
+      controller: controller ? ()=> {
+        controller.oninit();
+        return controller;
+      } : null
     }
   }
 
