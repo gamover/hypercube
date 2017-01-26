@@ -1,6 +1,7 @@
 import $m from 'mithril';
 
-import { getTracker } from './Tracker.js';
+import { getMeteor } from './Meteor';
+import { getTracker } from './Tracker';
 
 // ---------------------------------------------------------------------------------------------------------------------
 
@@ -20,12 +21,17 @@ export class HComponent {
     const component = this;
 
     let computations = [];
+    let subscribes = [];
     let intervalIds = [];
     let timeoutIds = [];
 
     let stopAllComputations = ()=> {
       for (let computation of computations) computation.stop();
       computations = [];
+    };
+    let stopAllSubscribes = ()=> {
+      for (let subscribe of subscribes) subscribe.stop();
+      subscribes = [];
     };
     let clearAllIntervals = ()=> {
       for (let iid of intervalIds) clearInterval(iid);
@@ -37,6 +43,7 @@ export class HComponent {
     };
     let stopAll = ()=> {
       stopAllComputations();
+      stopAllSubscribes();
       clearAllIntervals();
       clearAllTimeouts();
     };
@@ -56,32 +63,41 @@ export class HComponent {
         if (typeof super.onunload === 'function') return super.onunload(...arguments);
       }
 
-      autorun(fn) {
+      autorun(...args) {
         let Tracker = getTracker();
         if (!Tracker) throw new Error('Tracker is not defined');
 
-        let computation = Tracker.autorun(fn);
+        let computation = Tracker.autorun(...args);
         computations.push(computation);
         return computation;
+      }
+
+      subscribe(...args) {
+        let Meteor = getMeteor();
+        if (!Meteor) throw new Error('Meteor is not defined');
+
+        let subscribe = Meteor.subscribe(...args);
+        subscribes.push(subscribe);
+        return subscribe;
       }
 
       watch(fn) {
         let Tracker = getTracker();
         if (!Tracker) throw new Error('Tracker is not defined');
 
-        let computation = Tracker.autorun(c => { fn(); if (!c.firstRun) Tracker.nonreactive(()=> $m.redraw()); });
+        let computation = Tracker.autorun(c => { fn(); if (!c.firstRun) Tracker.nonreactive($m.redraw); });
         computations.push(computation);
         return computation;
       }
 
-      setInterval(fn, timeout) {
-        let iid = setInterval(fn, timeout);
+      setInterval(...args) {
+        let iid = setInterval(...args);
         intervalIds.push(iid);
         return iid;
       }
 
-      setTimeout(fn, timeout) {
-        let tid = setTimeout(fn, timeout);
+      setTimeout(...args) {
+        let tid = setTimeout(...args);
         timeoutIds.push(tid);
         return tid;
       }
