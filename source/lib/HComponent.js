@@ -114,7 +114,43 @@ export class HComponent {
    */
   buildController(Controller, ...args) {
     if (Controller === undefined) return this;
-    this._controller = Controller ? new Controller(this, ...args) : null;
+
+    this._controller = Controller ? (()=> {
+      let component = this;
+
+      class HController extends Controller {
+        getComponent() {
+          return component;
+        }
+
+        getModel() {
+          return component.getModel();
+        }
+
+        watch() {
+          return component.watch(...arguments);
+        }
+
+        autorun() {
+          return component.autorun(...arguments);
+        }
+
+        subscribe() {
+          return component.subscribe(...arguments);
+        }
+
+        setInterval() {
+          return component.setInterval(...arguments);
+        }
+
+        setTimeout() {
+          return component.setTimeout(...arguments);
+        }
+      }
+
+      return new HController(this, ...args);
+    })() : null;
+
     return this;
   }
 
