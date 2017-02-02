@@ -17,7 +17,7 @@ export class HLayout extends HComponent {
 
   getContent(placeName = 'default') {
     return (this._content[placeName] || []).map(item => {
-      if (item instanceof HComponent) return item.embed();
+      if (item instanceof HComponent) return item.mount();
       return item;
     });
   }
