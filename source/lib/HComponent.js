@@ -19,7 +19,7 @@ export class HComponent {
     this._component = null;
 
     this._computations = new HComputations(this);
-    this._embeded = false;
+    this._mounter = { oncreate: (vnode)=> this.mount(vnode.dom), onremove: (vnode)=> $m.mount(vnode.dom, null) };
     this._vnode = null;
     this._viewport = null;
 
@@ -120,35 +120,42 @@ export class HComponent {
 
       class HController extends Controller {
         getComponent() {
+          if (typeof super.getComponent === 'function') return super.getComponent(...arguments);
           return component;
         }
 
         getModel() {
+          if (typeof super.getModel === 'function') return super.getModel(...arguments);
           return component.getModel();
         }
 
         watch() {
+          if (typeof super.watch === 'function') return super.watch(...arguments);
           return component.watch(...arguments);
         }
 
         autorun() {
+          if (typeof super.autorun === 'function') return super.autorun(...arguments);
           return component.autorun(...arguments);
         }
 
         subscribe() {
+          if (typeof super.subscribe === 'function') return super.subscribe(...arguments);
           return component.subscribe(...arguments);
         }
 
         setInterval() {
+          if (typeof super.setInterval === 'function') return super.setInterval(...arguments);
           return component.setInterval(...arguments);
         }
 
         setTimeout() {
+          if (typeof super.setTimeout === 'function') return super.setTimeout(...arguments);
           return component.setTimeout(...arguments);
         }
       }
 
-      return new HController(this, ...args);
+      return new HController(...args);
     })() : null;
 
     return this;
@@ -170,8 +177,7 @@ export class HComponent {
    */
   mount(viewport) {
     let component = this._getMithrilComponent();
-    if (!viewport) { this._embeded = true; return $m(component); }
-    this._embeded = false;
+    if (!viewport) return this._mounter;
     this._viewport = viewport;
     $m.mount(viewport, component);
     return this;
@@ -184,7 +190,6 @@ export class HComponent {
   unmount() {
     if (!this._vnode) return this;
     $m.mount(this._viewport, null);
-    if (this._embeded) this._component.onremove(this._vnode);
     return this;
   }
 
