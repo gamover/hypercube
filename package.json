@@ -1,6 +1,6 @@
 {
   "name": "gamover-hypercube",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Components via mithril",
   "main": "./distribution/index.js",
   "repository": {

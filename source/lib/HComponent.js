@@ -19,9 +19,8 @@ export class HComponent {
     this._component = null;
 
     this._computations = new HComputations(this);
-    this._mounter = { oncreate: (vnode)=> this.mount(vnode.dom), onremove: (vnode)=> $m.mount(vnode.dom, null) };
-    this._vnode = null;
     this._viewport = null;
+    this._vnode = null;
 
     this.setModel(args.model);
     this.setView(args.view);
@@ -41,27 +40,26 @@ export class HComponent {
     let controller = this.getController();
 
     return this._component = {
-      oninit: ()=> {
+      oninit: (...args)=> {
         this._computations.stopAll();
-        if (controller && typeof controller.oninit === 'function') controller.oninit(...arguments);
+        if (controller && typeof controller.oninit === 'function') controller.oninit(...args);
       },
-      oncreate: (vnode)=> {
+      oncreate: (vnode, ...args)=> {
         this._vnode = vnode;
-        this._viewport = vnode.dom.parentNode;
-        if (controller && typeof controller.oncreate === 'function') controller.oncreate(...arguments);
+        if (controller && typeof controller.oncreate === 'function') controller.oncreate(vnode, ...args);
       },
-      onbeforeupdate: ()=> {
-        if (controller && typeof controller.onbeforeupdate === 'function') controller.onbeforeupdate(...arguments);
+      onbeforeupdate: (...args)=> {
+        if (controller && typeof controller.onbeforeupdate === 'function') controller.onbeforeupdate(...args);
       },
-      onupdate: ()=> {
-        if (controller && typeof controller.onupdate === 'function') controller.onupdate(...arguments);
+      onupdate: (...args)=> {
+        if (controller && typeof controller.onupdate === 'function') controller.onupdate(...args);
       },
-      onbeforeremove: ()=> {
-        if (controller && typeof controller.onbeforeremove === 'function') controller.onbeforeremove(...arguments);
+      onbeforeremove: (...args)=> {
+        if (controller && typeof controller.onbeforeremove === 'function') controller.onbeforeremove(...args);
       },
-      onremove: ()=> {
+      onremove: (...args)=> {
         this._computations.stopAll();
-        if (controller && typeof controller.onremove === 'function') controller.onremove(...arguments);
+        if (controller && typeof controller.onremove === 'function') controller.onremove(...args);
       },
 
       view: view
@@ -177,9 +175,8 @@ export class HComponent {
    */
   mount(viewport) {
     let component = this._getMithrilComponent();
-    if (!viewport) return this._mounter;
-    this._viewport = viewport;
-    $m.mount(viewport, component);
+    if (!viewport) return $m(component);
+    $m.mount(this._viewport = viewport, component);
     return this;
   }
 
@@ -188,8 +185,12 @@ export class HComponent {
    * @returns {HComponent}
    */
   unmount() {
-    if (!this._vnode) return this;
-    $m.mount(this._viewport, null);
+    if (this._viewport) $m.mount(this._viewport, null);
+    else if (this._vnode) {
+      this._component.onbeforeremove(this._vnode);
+      this._vnode.dom.remove();
+      this._component.onremove(this._vnode);
+    }
     return this;
   }
 
