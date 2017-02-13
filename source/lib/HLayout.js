@@ -1,5 +1,3 @@
-import $m from 'mithril';
-
 import { HComponent } from './HComponent';
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -13,9 +11,7 @@ export class HLayout extends HComponent {
 
   setContent(content, placeName = 'default') {
     if (content === undefined) return this;
-
     this._content[placeName] = content;
-
     return this;
   }
 

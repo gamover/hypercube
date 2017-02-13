@@ -40,26 +40,23 @@ export class HComponent {
     let controller = this.getController();
 
     return this._component = {
-      oninit: (...args)=> {
-        this._computations.stopAll();
-        if (controller && typeof controller.oninit === 'function') controller.oninit(...args);
+      oninit: ()=> {
+        if (controller && typeof controller.oninit === 'function') controller.oninit(...arguments);
       },
-      oncreate: (vnode, ...args)=> {
-        this._vnode = vnode;
-        if (controller && typeof controller.oncreate === 'function') controller.oncreate(vnode, ...args);
+      oncreate: ()=> {
+        if (controller && typeof controller.oncreate === 'function') controller.oncreate(...arguments);
       },
-      onbeforeupdate: (...args)=> {
-        if (controller && typeof controller.onbeforeupdate === 'function') controller.onbeforeupdate(...args);
+      onbeforeupdate: ()=> {
+        if (controller && typeof controller.onbeforeupdate === 'function') controller.onbeforeupdate(...arguments);
       },
-      onupdate: (...args)=> {
-        if (controller && typeof controller.onupdate === 'function') controller.onupdate(...args);
+      onupdate: ()=> {
+        if (controller && typeof controller.onupdate === 'function') controller.onupdate(...arguments);
       },
-      onbeforeremove: (...args)=> {
-        if (controller && typeof controller.onbeforeremove === 'function') controller.onbeforeremove(...args);
+      onbeforeremove: ()=> {
+        if (controller && typeof controller.onbeforeremove === 'function') controller.onbeforeremove(...arguments);
       },
-      onremove: (...args)=> {
-        this._computations.stopAll();
-        if (controller && typeof controller.onremove === 'function') controller.onremove(...args);
+      onremove: ()=> {
+        if (controller && typeof controller.onremove === 'function') controller.onremove(...arguments);
       },
 
       view: view
@@ -117,6 +114,21 @@ export class HComponent {
       let component = this;
 
       class HController extends Controller {
+        oninit() {
+          component._computations.stopAll();
+          if (typeof super.oninit === 'function') return super.oninit(...arguments);
+        }
+
+        oncreate(vnode) {
+          component._vnode = vnode;
+          if (typeof super.oncreate === 'function') return super.oncreate(...arguments);
+        }
+
+        onremove() {
+          component._computations.stopAll();
+          if (typeof super.onremove === 'function') return super.onremove(...arguments);
+        }
+
         getComponent() {
           if (typeof super.getComponent === 'function') return super.getComponent(...arguments);
           return component;
@@ -165,6 +177,12 @@ export class HComponent {
    */
   getController() {
     return this._controller;
+  }
+
+  route(viewport, defaultRoute, route) {
+    let component = this._getMithrilComponent();
+    $m.route(this._viewport = viewport, defaultRoute, { [route]: component });
+    return this;
   }
 
   /**
