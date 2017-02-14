@@ -8,7 +8,7 @@ export class HComponent {
   /**
    * Конструктор компонента
    * @param {Object} args параметры компонента
-   * @param {Any} ctrlArgs аргументы конструктора контроллера
+   * @param {*} ctrlArgs аргументы конструктора контроллера
    */
   constructor(args, ...ctrlArgs) {
     args = args || {};
@@ -40,23 +40,29 @@ export class HComponent {
     let controller = this.getController();
 
     return this._component = {
-      oninit: ()=> {
-        if (controller && typeof controller.oninit === 'function') controller.oninit(...arguments);
+      oninit() {
+        if (controller && typeof controller.oninit === 'function')
+          return controller.oninit(...arguments);
       },
-      oncreate: ()=> {
-        if (controller && typeof controller.oncreate === 'function') controller.oncreate(...arguments);
+      oncreate() {
+        if (controller && typeof controller.oncreate === 'function')
+          return controller.oncreate(...arguments);
       },
-      onbeforeupdate: ()=> {
-        if (controller && typeof controller.onbeforeupdate === 'function') controller.onbeforeupdate(...arguments);
+      onbeforeupdate() {
+        if (controller && typeof controller.onbeforeupdate === 'function')
+          return controller.onbeforeupdate(...arguments);
       },
-      onupdate: ()=> {
-        if (controller && typeof controller.onupdate === 'function') controller.onupdate(...arguments);
+      onupdate() {
+        if (controller && typeof controller.onupdate === 'function')
+          return controller.onupdate(...arguments);
       },
-      onbeforeremove: ()=> {
-        if (controller && typeof controller.onbeforeremove === 'function') controller.onbeforeremove(...arguments);
+      onbeforeremove() {
+        if (controller && typeof controller.onbeforeremove === 'function')
+          return controller.onbeforeremove(...arguments);
       },
-      onremove: ()=> {
-        if (controller && typeof controller.onremove === 'function') controller.onremove(...arguments);
+      onremove() {
+        if (controller && typeof controller.onremove === 'function')
+          return controller.onremove(...arguments);
       },
 
       view: view
@@ -65,7 +71,7 @@ export class HComponent {
 
   /**
    * Задание модели
-   * @param {Any|null} model модель
+   * @param {*|null} model модель
    * @returns {HComponent}
    */
   setModel(model) {
@@ -76,7 +82,7 @@ export class HComponent {
 
   /**
    * Получение модели
-   * @returns {Any|null}
+   * @returns {*|null}
    */
   getModel() {
     return this._model;
@@ -104,7 +110,7 @@ export class HComponent {
   /**
    * Сборка контроллера
    * @param {Function|null} Controller конструктор контроллера
-   * @param {Any} args аргументы конструктора контроллера
+   * @param {*} args аргументы конструктора контроллера
    * @returns {HComponent}
    */
   buildController(Controller, ...args) {
@@ -177,12 +183,6 @@ export class HComponent {
    */
   getController() {
     return this._controller;
-  }
-
-  route(viewport, defaultRoute, route) {
-    let component = this._getMithrilComponent();
-    $m.route(this._viewport = viewport, defaultRoute, { [route]: component });
-    return this;
   }
 
   /**

@@ -23,32 +23,32 @@ export class HComputations {
     return computation;
   }
 
-  autorun(...args) {
+  autorun() {
     let Tracker = getTracker();
     if (!Tracker) throw new Error('Tracker is not defined');
 
-    let computation = Tracker.autorun(...args);
+    let computation = Tracker.autorun(...arguments);
     this._computations.push(computation);
     return computation;
   }
 
-  subscribe(...args) {
+  subscribe() {
     let Meteor = getMeteor();
     if (!Meteor) throw new Error('Meteor is not defined');
 
-    let subscribe = Meteor.subscribe(...args);
+    let subscribe = Meteor.subscribe(...arguments);
     this._subscribes.push(subscribe);
     return subscribe;
   }
 
-  setInterval(...args) {
-    let iid = setInterval(...args);
+  setInterval() {
+    let iid = setInterval(...arguments);
     this._intervals.push(iid);
     return iid;
   }
 
-  setTimeout(...args) {
-    let tid = setTimeout(...args);
+  setTimeout() {
+    let tid = setTimeout(...arguments);
     this._timeouts.push(tid);
     return tid;
   }
