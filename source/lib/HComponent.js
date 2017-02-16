@@ -130,35 +130,47 @@ export class HComponent {
       class HController extends Controller {
         oninit() {
           component._computations.stopAll();
+          let res;
+          if (typeof super.oninit === 'function') res = super.oninit(...arguments);
           component._eventHandlers.init.forEach(eventHandler => eventHandler(...arguments));
-          if (typeof super.oninit === 'function') return super.oninit(...arguments);
+          return res;
         }
 
         oncreate(vnode) {
           component._vnode = vnode;
+          let res;
+          if (typeof super.oncreate === 'function') res = super.oncreate(...arguments);
           component._eventHandlers.create.forEach(eventHandler => eventHandler(...arguments));
-          if (typeof super.oncreate === 'function') return super.oncreate(...arguments);
+          return res;
         }
 
         onbeforeupdate() {
+          let res;
+          if (typeof super.onbeforeupdate === 'function') res = super.onbeforeupdate(...arguments);
           component._eventHandlers.beforeupdate.forEach(eventHandler => eventHandler(...arguments));
-          if (typeof super.onbeforeupdate === 'function') return super.onbeforeupdate(...arguments);
+          return res;
         }
 
         onupdate() {
+          let res;
+          if (typeof super.onupdate === 'function') res = super.onupdate(...arguments);
           component._eventHandlers.update.forEach(eventHandler => eventHandler(...arguments));
-          if (typeof super.onupdate === 'function') return super.onupdate(...arguments);
+          return res;
         }
 
         onbeforeremove() {
+          let res;
+          if (typeof super.onbeforeremove === 'function') res = super.onbeforeremove(...arguments);
           component._eventHandlers.beforeremove.forEach(eventHandler => eventHandler(...arguments));
-          if (typeof super.onbeforeremove === 'function') return super.onbeforeremove(...arguments);
+          return res;
         }
 
         onremove() {
           component._computations.stopAll();
+          let res;
+          if (typeof super.onremove === 'function') res = super.onremove(...arguments);
           component._eventHandlers.remove.forEach(eventHandler => eventHandler(...arguments));
-          if (typeof super.onremove === 'function') return super.onremove(...arguments);
+          return res;
         }
 
         getComponent() {
