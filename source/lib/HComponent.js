@@ -21,6 +21,14 @@ export class HComponent {
     this._computations = new HComputations(this);
     this._viewport = null;
     this._vnode = null;
+    this._eventHandlers = {
+      init: [],
+      create: [],
+      beforeupdate: [],
+      update: [],
+      beforeremove: [],
+      remove: []
+    };
 
     this.setModel(args.model);
     this.setView(args.view);
@@ -122,16 +130,34 @@ export class HComponent {
       class HController extends Controller {
         oninit() {
           component._computations.stopAll();
+          component._eventHandlers.init.forEach(eventHandler => eventHandler(...arguments));
           if (typeof super.oninit === 'function') return super.oninit(...arguments);
         }
 
         oncreate(vnode) {
           component._vnode = vnode;
+          component._eventHandlers.create.forEach(eventHandler => eventHandler(...arguments));
           if (typeof super.oncreate === 'function') return super.oncreate(...arguments);
+        }
+
+        onbeforeupdate() {
+          component._eventHandlers.beforeupdate.forEach(eventHandler => eventHandler(...arguments));
+          if (typeof super.onbeforeupdate === 'function') return super.onbeforeupdate(...arguments);
+        }
+
+        onupdate() {
+          component._eventHandlers.update.forEach(eventHandler => eventHandler(...arguments));
+          if (typeof super.onupdate === 'function') return super.onupdate(...arguments);
+        }
+
+        onbeforeremove() {
+          component._eventHandlers.beforeremove.forEach(eventHandler => eventHandler(...arguments));
+          if (typeof super.onbeforeremove === 'function') return super.onbeforeremove(...arguments);
         }
 
         onremove() {
           component._computations.stopAll();
+          component._eventHandlers.remove.forEach(eventHandler => eventHandler(...arguments));
           if (typeof super.onremove === 'function') return super.onremove(...arguments);
         }
 
@@ -259,5 +285,16 @@ export class HComponent {
    */
   setTimeout() {
     return this._computations.setTimeout(...arguments);
+  }
+
+  /**
+   * Добавление обработчика события
+   * @param {String} eventName имя события
+   * @param {Function} eventHandler обработчик события
+   * @returns {HComponent}
+   */
+  on(eventName, eventHandler) {
+    this._eventHandlers[eventName].push(eventHandler);
+    return this;
   }
 }
