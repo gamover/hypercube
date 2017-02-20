@@ -183,6 +183,11 @@ export class HComponent {
           return component.getModel();
         }
 
+        redraw() {
+          if (typeof super.redraw === 'function') return super.redraw(...arguments);
+          return component.redraw(...arguments);
+        }
+
         watch() {
           if (typeof super.watch === 'function') return super.watch(...arguments);
           return component.watch(...arguments);
