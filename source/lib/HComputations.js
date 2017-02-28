@@ -18,7 +18,7 @@ export class HComputations {
     let Tracker = getTracker();
     if (!Tracker) throw new Error('Tracker is not defined');
 
-    let computation = Tracker.autorun(c => { comp ? fn(...arguments) : fn(); if (!c.firstRun) Tracker.nonreactive($m.redraw); });
+    let computation = Tracker.autorun((c, ...args) => { comp ? fn(c, ...args) : fn(); if (!c.firstRun) Tracker.nonreactive($m.redraw); });
     this._computations.push(computation);
     return computation;
   }
