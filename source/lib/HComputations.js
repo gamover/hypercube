@@ -14,11 +14,11 @@ export class HComputations {
     this._timeouts = [];
   }
 
-  watch(fn) {
+  watch(fn, comp = false) {
     let Tracker = getTracker();
     if (!Tracker) throw new Error('Tracker is not defined');
 
-    let computation = Tracker.autorun(c => { fn(); if (!c.firstRun) Tracker.nonreactive($m.redraw); });
+    let computation = Tracker.autorun(c => { comp ? fn(...arguments) : fn(); if (!c.firstRun) Tracker.nonreactive($m.redraw); });
     this._computations.push(computation);
     return computation;
   }
