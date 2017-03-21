@@ -1,5 +1,6 @@
 import $m from 'mithril';
 
+import { getTracker } from './Tracker';
 import { HComputations } from './HComputations';
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -189,13 +190,23 @@ export class HComponent {
         }
 
         watch() {
-          if (typeof super.watch === 'function') return super.watch(...arguments);
+          if (typeof super.watch === 'function') try {
+            return super.watch(...arguments);
+          }
+          catch (err) {
+            if (!(err instanceof TypeError)) console.error(err);
+          }
           return component.watch(...arguments);
         }
 
         autorun() {
           if (typeof super.autorun === 'function') return super.autorun(...arguments);
           return component.autorun(...arguments);
+        }
+
+        nonreactive() {
+          if (typeof super.nonreactive === 'function') return super.nonreactive(...arguments);
+          return component.nonreactive(...arguments);
         }
 
         subscribe() {
@@ -278,6 +289,16 @@ export class HComponent {
    */
   autorun() {
     return this._computations.autorun(...arguments);
+  }
+
+  /**
+   * Предотвращение реактивного вычисления
+   */
+  nonreactive() {
+    let Tracker = getTracker();
+    if (!Tracker) throw new Error('Tracker is not defined');
+
+    return Tracker.nonreactive(...arguments);
   }
 
   /**
